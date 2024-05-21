@@ -1,7 +1,10 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using OpenAI.ObjectModels.ResponseModels;
 
 namespace OpenAI.Extensions;
@@ -66,10 +69,14 @@ internal static class HttpClientExtensions
     {
         var settings = new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) // avoid encoding issues
         };
 
-        var content = JsonContent.Create(requestModel, null, settings);
+        var jsonData = JsonSerializer.Serialize(requestModel, settings);
+
+        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
         using var request = CreatePostEventStreamRequest(uri, content);
 
