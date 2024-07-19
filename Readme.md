@@ -1,5 +1,9 @@
 
 # .NET SDK for OpenAI
+⭐ We appreciate your star, it helps!  
+ 
+[![Discord Shield](https://discord.com/api/guilds/1250841506785529916/widget.png?style=shield)](https://discord.gg/R2XcBC8E) *(If the invite link doesn't work, ping me in discussions.)*  
+We have a very new Discord channel. Please come and help us build the .NET AI community.
 
 ## Overview
 A .NET SDK for accessing OpenAI's API, provided as a community library. This SDK allows you to integrate OpenAI's capabilities into your .NET applications with ease.
@@ -32,7 +36,8 @@ Install-Package Betalgo.OpenAI.Utilities
 Maintenance of this project is made possible by all the bug reporters, [contributors](https://github.com/betalgo/openai/graphs/contributors), and [sponsors](https://github.com/sponsors/kayhantolga).
 
 💖 Sponsors:  
-[@betalgo](https://github.com/betalgo), [Laser Cat Eyes](https://lasercateyes.com/), [@tylerje](https://github.com/tylerje), [@oferavnery](https://github.com/oferavnery), [@MayDay-wpf](https://github.com/MayDay-wpf), [@AnukarOP](https://github.com/AnukarOP), [@Removable](https://github.com/Removable), [@Scar11](https://github.com/Scar11)
+[@betalgo](https://github.com/betalgo), [Laser Cat Eyes](https://lasercateyes.com/)   
+[@tylerje](https://github.com/tylerje), [@oferavnery](https://github.com/oferavnery), [@MayDay-wpf](https://github.com/MayDay-wpf), [@AnukarOP](https://github.com/AnukarOP), [@Removable](https://github.com/Removable), [@Scar11](https://github.com/Scar11)
 
 ---
 
@@ -106,32 +111,25 @@ if (completionResult.Successful)
 
 ---
 ## Notes
-#### Library Renaming
-This library was previously known as `Betalgo.OpenAI.GPT3`, and now it has a new package ID: `Betalgo.OpenAI`.
-
 Due to time constraints, not all methods have been thoroughly tested or fully documented. If you encounter any issues, please report them or submit a pull request. Your contributions are always appreciated.
 
-I initially developed this SDK for my personal use and decided to share it with the community. As I have not maintained open-source projects before, any assistance or feedback would be greatly appreciated. Feel free to reach out with your suggestions.
-
-Please be aware that future releases may frequently include breaking changes. Consider this before deciding to use the library. I cannot accept responsibility for any damage caused by using the library. You are free to explore alternative libraries or the OpenAI Web-API if you feel this is not suitable for your purposes.
-
+Needless to say, I cannot accept responsibility for any damage caused by using the library.
 
 ## Changelog
-### 8.2.2
-- Assistant (Beta) feature is now available in the main package. Be aware there might still be bugs due to the beta status of the feature and the SDK itself. Please report any issues you encounter.
-- Use `"UseBeta": true` in your config file or `serviceCollection.AddOpenAIService(r => r.UseBeta = true);` or `new OpenAiOptions { UseBeta = true }` in your service registration to enable Assistant features.
-- Expect more frequent breaking changes around the assistant API due to its beta nature.
-- All Assistant endpoints are implemented except for streaming functionality, which will be added soon.
-- The Playground has samples for every endpoint usage, but lacks a complete implementation for the Assistant APIs. Refer to [Assistants overview - OpenAI API](https://platform.openai.com/docs/assistants/overview) for more details.
-- Special thanks to all contributors for making this version possible!
 
-#### Other Changes:
-- Fixed a bug with multiple tools calling in stream mode.
-- Added error handling for streaming.
-- Added usage information for streaming (use `StreamOptions = new(){IncludeUsage = true,}` to get usage information).
-- Added **timestamp_granularities[]** for Create transcription to provide the timestamp of every word.
+### 8.6.1
+- Updated Models with new GPT-4o mini model.
+### 8.6.0
+- Fixed Azure Assistant URLs.
+- Updated library logo.
+- Added support for tool resources in Assistant response.
 
 ### [More Change Logs](https://github.com/betalgo/openai/wiki/Change-Logs)
 ---
 
 For any issues, contributions, or feedback, feel free to reach out or submit a pull request.
+
+Betalgo X: [Betalgo (@Betalgo) / X (twitter.com)](https://twitter.com/Betalgo)  
+Betalgo Linkedin:  [Betalgo | LinkedIn](https://www.linkedin.com/company/betalgo-up )  
+Tolga X: [Tolga Kayhan (@kayhantolga) / X (twitter.com)](https://twitter.com/kayhantolga)  
+Tolga Linkedin: [Tolga Kayhan | LinkedIn](https://www.linkedin.com/in/kayhantolga/)  

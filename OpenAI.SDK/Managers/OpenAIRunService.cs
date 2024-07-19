@@ -1,6 +1,8 @@
-﻿using OpenAI.Extensions;
+﻿using System.Runtime.CompilerServices;
+using OpenAI.Extensions;
 using OpenAI.Interfaces;
 using OpenAI.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.ResponseModels;
 using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.Managers;
@@ -23,10 +25,41 @@ public partial class OpenAIService : IRunService
             throw new ArgumentNullException(nameof(threadId));
         }
 
-        request.ProcessModelId(modelId, _defaultModelId,true);
+        request.ProcessModelId(modelId, _defaultModelId, true);
         return await _httpClient.PostAndReadAsAsync<RunResponse>(_endpointProvider.RunCreate(threadId), request, cancellationToken);
     }
-    
+
+    /// <summary>
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="request"></param>
+    /// <param name="modelId"></param>
+    /// <param name="justDataMode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<BaseResponse> RunCreateAsStream(string threadId, RunCreateRequest request, string? modelId = null, bool justDataMode = true, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Mark the request as streaming
+        request.Stream = true;
+
+        // Send the request to the CompletionCreate endpoint
+        request.ProcessModelId(modelId, _defaultModelId, true);
+
+        using var response = _httpClient.PostAsStreamAsync(_endpointProvider.RunCreate(threadId), request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            yield return await response.HandleResponseContent<RunResponse>(cancellationToken);
+            yield break;
+        }
+
+        await foreach (var baseResponse in response.AsStream(justDataMode: justDataMode,cancellationToken: cancellationToken))
+        {
+            yield return baseResponse;
+        }
+    }
+
+
     /// <inheritdoc />
     public async Task<RunResponse> RunModify(string threadId, string runId, RunModifyRequest request, CancellationToken cancellationToken = default)
     {
@@ -34,10 +67,12 @@ public partial class OpenAIService : IRunService
         {
             throw new ArgumentNullException(nameof(threadId));
         }
+
         if (string.IsNullOrWhiteSpace(runId))
         {
             throw new ArgumentNullException(nameof(runId));
         }
+
         return await _httpClient.PostAndReadAsAsync<RunResponse>(_endpointProvider.RunModify(threadId, runId), request, cancellationToken);
     }
 
@@ -111,16 +146,52 @@ public partial class OpenAIService : IRunService
         return await _httpClient.PostAndReadAsAsync<RunResponse>(_endpointProvider.RunSubmitToolOutputs(threadId, runId), request, cancellationToken);
     }
 
+    public async IAsyncEnumerable<BaseResponse> RunSubmitToolOutputsAsStream(string threadId, string runId, SubmitToolOutputsToRunRequest request, bool justDataMode = true, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Mark the request as streaming
+        request.Stream = true;
+
+        // Send the request to the CompletionCreate endpoint
+        using var response = _httpClient.PostAsStreamAsync(_endpointProvider.RunSubmitToolOutputs(threadId, runId), request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            yield return await response.HandleResponseContent<BaseResponse>(cancellationToken);
+            yield break;
+        }
+
+        await foreach (var baseResponse in response.AsStream(justDataMode: justDataMode, cancellationToken: cancellationToken)) yield return baseResponse;
+    }
+
     /// <inheritdoc />
     public async Task<RunResponse> CreateThreadAndRun(CreateThreadAndRunRequest requestBody, CancellationToken cancellationToken = default)
     {
         return await _httpClient.PostAndReadAsAsync<RunResponse>(_endpointProvider.ThreadAndRunCreate(), requestBody, cancellationToken);
     }
 
-    /// <inheritdoc/>
+    public async IAsyncEnumerable<BaseResponse> CreateThreadAndRunAsStream(CreateThreadAndRunRequest createThreadAndRunRequest, string? modelId = null, bool justDataMode = true,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Mark the request as streaming
+        createThreadAndRunRequest.Stream = true;
+
+        // Send the request to the CompletionCreate endpoint
+        createThreadAndRunRequest.ProcessModelId(modelId, _defaultModelId, true);
+
+        using var response = _httpClient.PostAsStreamAsync(_endpointProvider.ThreadAndRunCreate(), createThreadAndRunRequest, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            yield return await response.HandleResponseContent<BaseResponse>(cancellationToken);
+            yield break;
+        }
+
+        await foreach (var baseResponse in response.AsStream(justDataMode: justDataMode, cancellationToken: cancellationToken)) yield return baseResponse;
+    }
+
+    /// <inheritdoc />
     public async Task<RunListResponse> ListRuns(string threadId, PaginationRequest runListRequest, CancellationToken cancellationToken = default)
     {
         return await _httpClient.GetReadAsAsync<RunListResponse>(_endpointProvider.RunList(threadId, runListRequest), cancellationToken);
     }
-
 }

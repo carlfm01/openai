@@ -219,7 +219,7 @@ internal static partial class AssistantTestHelper
             CreatedFileId1 = uploadFilesResponse.Id;
             var result = await openAI.Beta.VectorStoreFiles.CreateVectorStoreFile(CreatedVectorId, new()
             {
-                FileId = CreatedFileId1,
+                FileId = CreatedFileId1
             });
 
             if (result.Successful)
@@ -502,11 +502,11 @@ internal static partial class AssistantTestHelper
 
         private static async Task Cleanup(IOpenAIService sdk)
         {
-        
-            if (!string.IsNullOrWhiteSpace(CreatedVectorFileId))
+            if (!string.IsNullOrWhiteSpace(CreatedVectorFileId) && !string.IsNullOrWhiteSpace(CreatedVectorId))
             {
                 await sdk.Beta.VectorStoreFiles.DeleteVectorStoreFile(CreatedVectorId, CreatedVectorFileId);
             }
+
             if (!string.IsNullOrWhiteSpace(CreatedFileId1))
             {
                 await sdk.Files.DeleteFile(CreatedFileId1);

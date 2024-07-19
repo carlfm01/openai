@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Globalization;
 using OpenAI.Extensions;
 using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
@@ -26,37 +25,29 @@ public partial class OpenAIService : IAudioService
 
     public async Task<AudioCreateSpeechResponse<T>> CreateSpeech<T>(AudioCreateSpeechRequest audioCreateSpeechRequest, CancellationToken cancellationToken = default)
     {
-        return await _httpClient.PostAndReadAsDataAsync<AudioCreateSpeechResponse<T>,T>(_endpointProvider.AudioCreateSpeech(), audioCreateSpeechRequest, cancellationToken);
+        return await _httpClient.PostAndReadAsDataAsync<AudioCreateSpeechResponse<T>, T>(_endpointProvider.AudioCreateSpeech(), audioCreateSpeechRequest, cancellationToken);
     }
 
     private async Task<AudioCreateTranscriptionResponse> Create(AudioCreateTranscriptionRequest audioCreateTranscriptionRequest, string uri, CancellationToken cancellationToken = default)
     {
         var multipartContent = new MultipartFormDataContent();
 
-        if (audioCreateTranscriptionRequest is {File: not null, FileStream: not null})
+        if (audioCreateTranscriptionRequest is { File: not null, FileStream: not null })
         {
             throw new ArgumentException("Either File or FileStream must be set, but not both.");
         }
 
         if (audioCreateTranscriptionRequest.File != null)
         {
-            multipartContent.Add(
-                new ByteArrayContent(audioCreateTranscriptionRequest.File),
-                "file",
-                audioCreateTranscriptionRequest.FileName
-            );
+            multipartContent.Add(new ByteArrayContent(audioCreateTranscriptionRequest.File), "file", audioCreateTranscriptionRequest.FileName);
         }
         else if (audioCreateTranscriptionRequest.FileStream != null)
         {
-            multipartContent.Add(
-                new StreamContent(audioCreateTranscriptionRequest.FileStream),
-                "file",
-                audioCreateTranscriptionRequest.FileName
-            );
+            multipartContent.Add(new StreamContent(audioCreateTranscriptionRequest.FileStream), "file", audioCreateTranscriptionRequest.FileName);
         }
 
         multipartContent.Add(new StringContent(audioCreateTranscriptionRequest.Model), "model");
-        
+
         if (audioCreateTranscriptionRequest.TimestampGranularities != null)
         {
             foreach (var granularity in audioCreateTranscriptionRequest.TimestampGranularities)
@@ -82,20 +73,22 @@ public partial class OpenAIService : IAudioService
 
         if (audioCreateTranscriptionRequest.Temperature != null)
         {
-            multipartContent.Add(new StringContent(audioCreateTranscriptionRequest.Temperature.ToString()!), "temperature");
+            multipartContent.Add(new StringContent(audioCreateTranscriptionRequest.Temperature.Value.ToString(CultureInfo.InvariantCulture)), "temperature");
         }
 
 
-        if (null == audioCreateTranscriptionRequest.ResponseFormat ||
-            StaticValues.AudioStatics.ResponseFormat.Json == audioCreateTranscriptionRequest.ResponseFormat ||
+        if (null == audioCreateTranscriptionRequest.ResponseFormat || StaticValues.AudioStatics.ResponseFormat.Json == audioCreateTranscriptionRequest.ResponseFormat ||
             StaticValues.AudioStatics.ResponseFormat.VerboseJson == audioCreateTranscriptionRequest.ResponseFormat)
         {
             return await _httpClient.PostFileAndReadAsAsync<AudioCreateTranscriptionResponse>(uri, multipartContent, cancellationToken);
         }
 
-        return new AudioCreateTranscriptionResponse
+        var response = await _httpClient.PostFileAndReadAsStringAsync<AudioCreateTranscriptionResponse>(uri, multipartContent, cancellationToken);
+        if (response.stringResponse != null)
         {
-            Text = await _httpClient.PostFileAndReadAsStringAsync(uri, multipartContent, cancellationToken)
-        };
+            response.baseResponse.Text = response.stringResponse;
+        }
+
+        return response.baseResponse;
     }
 }
