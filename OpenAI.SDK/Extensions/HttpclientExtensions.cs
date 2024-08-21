@@ -118,10 +118,23 @@ internal static class HttpClientExtensions
         return await HandleResponseContent<TResponse>(response, cancellationToken);
     }
 
-    public static async Task<string> PostFileAndReadAsStringAsync(this HttpClient client, string uri, HttpContent content, CancellationToken cancellationToken = default)
+    public static async Task<(string? stringResponse, TResponse baseResponse)> PostFileAndReadAsStringAsync<TResponse>(this HttpClient client, string uri, HttpContent content, CancellationToken cancellationToken = default)
+        where TResponse : BaseResponse, new()
     {
         var response = await client.PostAsync(uri, content, cancellationToken);
-        return await response.Content.ReadAsStringAsync(cancellationToken) ?? throw new InvalidOperationException();
+        if (response.IsSuccessStatusCode)
+        {
+            var tResponse = new TResponse
+            {
+                HttpStatusCode = response.StatusCode,
+                HeaderValues = response.ParseHeaders()
+            };
+            return (await response.Content.ReadAsStringAsync(cancellationToken), tResponse);
+        }
+        else
+        {
+            return (null, await HandleResponseContent<TResponse>(response, cancellationToken));
+        }
     }
 
     public static async Task<TResponse> DeleteAndReadAsAsync<TResponse>(this HttpClient client, string uri, CancellationToken cancellationToken = default) where TResponse : BaseResponse, new()
@@ -146,8 +159,7 @@ internal static class HttpClientExtensions
         }
         else
         {
-            result = await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken) ??
-                     throw new InvalidOperationException();
+            result = await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken) ?? throw new InvalidOperationException();
         }
 
         result.HttpStatusCode = response.StatusCode;
@@ -158,7 +170,7 @@ internal static class HttpClientExtensions
 
     public static ResponseHeaderValues ParseHeaders(this HttpResponseMessage response)
     {
-        return new ResponseHeaderValues()
+        return new()
         {
             Date = response.Headers.Date,
             Connection = response.Headers.Connection?.ToString(),

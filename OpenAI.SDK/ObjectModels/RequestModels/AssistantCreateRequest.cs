@@ -3,7 +3,7 @@ using OpenAI.ObjectModels.SharedModels;
 
 namespace OpenAI.ObjectModels.RequestModels;
 
-public class AssistantCreateRequest : IOpenAiModels.IModel, IOpenAiModels.IFileIds, IOpenAiModels.IMetaData, IOpenAiModels.ITemperature
+public class AssistantCreateRequest : IOpenAiModels.IModel, IOpenAiModels.IMetaData, IOpenAiModels.ITemperature
 {
     /// <summary>
     ///     The name of the assistant. The maximum length is 256 characters.
@@ -64,12 +64,6 @@ public class AssistantCreateRequest : IOpenAiModels.IModel, IOpenAiModels.IFileI
     /// </summary>
     [JsonPropertyName("response_format")]
     public ResponseFormatOneOfType? ResponseFormat { get; set; }
-
-    /// <summary>
-    ///     A list of file IDs attached to this assistant.
-    /// </summary>
-    [JsonPropertyName("file_ids")]
-    public List<string>? FileIds { get; set; }
 
     /// <summary>
     ///     Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information
